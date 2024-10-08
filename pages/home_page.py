@@ -22,9 +22,6 @@ if 'abstract' not in st.session_state:
 
 
 ######### LOAD KEYS & CLIENTS #########
-# load_dotenv()
-# openai_key = os.getenv('OPENAI_KEY')
-# openai_client = openai.OpenAI(api_key=openai_key)
 insight_grant = InsightGrant()
 
 
@@ -43,8 +40,6 @@ def find_grants():
         grants_with_scores = st.session_state.grants.copy()
         grants_with_scores['cosine_scores'] = cosine_scores
         st.session_state['results'] = grants_with_scores.sort_values(by='cosine_scores', ascending=False)
-        # st.session_state.grants['cosine_scores'] = cosine_scores
-        # st.write(st.session_state.grants)
 
 @st.fragment
 def get_abstract():
@@ -52,8 +47,6 @@ def get_abstract():
 
 
 ######## LOAD DATA ########
-# df = load_data('data/hhs.parquet')
-# st.session_state['grants'] = load_data('data/hhs.parquet')
 st.session_state['grants'] = pd.concat([load_data(path) for path in glob.glob('data/grants/**/*.parquet', recursive=True)])
 
 
@@ -81,8 +74,3 @@ with buttons_container:
 
 if 'results' in st.session_state:
     st.dataframe(st.session_state.results.query('cosine_scores >= 0.80').drop(columns=['embeddings', 'scraped_at']), hide_index=True)
-    # for result in st.session_state.embedding:
-    #     st.divider()
-    #     st.write(embedding)
-
-# st.write(st.session_state.grants.drop(columns='embeddings')['cosine_scores'])

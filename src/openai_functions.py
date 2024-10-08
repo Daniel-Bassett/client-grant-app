@@ -3,12 +3,11 @@ import os
 
 import pandas as pd
 import numpy as np
-
+import streamlit as st
 import openai
 
 ######### LOAD KEYS & CLIENTS #########
-load_dotenv()
-openai_key = os.getenv('OPENAI_KEY')
+openai_key = st.secrets['openai_key']
 
 class InsightGrant:
     def __init__(self):
