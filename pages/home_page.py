@@ -80,7 +80,7 @@ with buttons_container:
         st.button('Delete', on_click=clear_text)
 
 if 'results' in st.session_state:
-    st.dataframe(st.session_state.results.drop(columns=['embeddings', 'scraped_at']), hide_index=True)
+    st.dataframe(st.session_state.results.query('cosine_scores >= 0.80').drop(columns=['embeddings', 'scraped_at']), hide_index=True)
     # for result in st.session_state.embedding:
     #     st.divider()
     #     st.write(embedding)
