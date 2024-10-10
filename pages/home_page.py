@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import os
 import glob
+import asyncio
 
 import streamlit as st
 import pandas as pd
@@ -11,8 +12,11 @@ import seaborn as sns
 import plotly.express as px
 
 import openai
+from anthropic import Anthropic, RateLimitError, AsyncAnthropic, InternalServerError
 
-from src.openai_functions import InsightGrant
+from src.llm_functions import InsightGrant
+
+COSINE_THRESHOLD = 0.81
 
 st.write('Home Page')
 
@@ -39,7 +43,14 @@ def find_grants():
         cosine_scores = np.dot(np.stack(st.session_state.grants['embeddings']), embedding)
         grants_with_scores = st.session_state.grants.copy()
         grants_with_scores['cosine_scores'] = cosine_scores
-        st.session_state['results'] = grants_with_scores.sort_values(by='cosine_scores', ascending=False)
+        st.session_state['results'] = (grants_with_scores
+                                       .sort_values(by='cosine_scores', ascending=False)
+                                       .query('cosine_scores >= @COSINE_THRESHOLD')
+                                       .drop(columns=['embeddings', 'scraped_at'])
+                                       .iloc[:100])
+        with st.spinner('Finding matches...'):
+            matches = asyncio.run(insight_grant.analyze_matches_anthropic_only(matches=st.session_state['results'], abstract=st.session_state.abstract))
+            st.session_state['matches'] = matches.query('good_match.str.contains("yes", case=False)').reset_index(drop=True)
 
 @st.fragment
 def get_abstract():
@@ -51,8 +62,8 @@ st.session_state['grants'] = pd.concat([load_data(path) for path in glob.glob('d
 
 
 ######## SHOW DATAFRAME ########
-# st.data_editor(df)
-# st.write(df.iloc[0]['description'])
+# st.data_editor(st.session_state['grants'])
+# st.write(st.session_state['grants'].iloc[0]['description'])
 
 
 ######## Abstract Input ########
@@ -72,5 +83,6 @@ with buttons_container:
     with del_col:
         st.button('Delete', on_click=clear_text)
 
-if 'results' in st.session_state:
-    st.dataframe(st.session_state.results.query('cosine_scores >= 0.80').drop(columns=['embeddings', 'scraped_at']), hide_index=True)
+if 'matches' in st.session_state:
+    # st.write(len(st.session_state.matches))
+    st.dataframe(st.session_state.matches, hide_index=True)
