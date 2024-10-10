@@ -13,8 +13,7 @@ import openai
 
 
 ######### LOAD KEYS & CLIENTS #########
-load_dotenv()
-openai_key = os.getenv('OPENAI_KEY')
+openai_key = st.secrets['openai_key']
 openai_client = openai.OpenAI(api_key=openai_key)
 
 ######### DEFINE FUNCTION #########
