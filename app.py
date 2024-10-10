@@ -37,7 +37,7 @@ if not check_password():
     st.stop()
 
 ######## APP LAYOUT ########
-home_page = st.Page(page='pages/home_page.py', title='Home Page')
+home_page = st.Page(page='pages/home-page/home_page.py', title='Home Page')
 chat_page = st.Page(page='pages/chat-page/chat_page.py', title='Chat with Grants')
 
 
