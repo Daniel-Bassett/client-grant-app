@@ -16,7 +16,7 @@ from anthropic import Anthropic, RateLimitError, AsyncAnthropic, InternalServerE
 
 from src.llm_functions import InsightGrant
 
-COSINE_THRESHOLD = 0.81
+COSINE_THRESHOLD = 0.79
 
 st.write('Home Page')
 
@@ -47,7 +47,7 @@ def find_grants():
                                        .sort_values(by='cosine_scores', ascending=False)
                                        .query('cosine_scores >= @COSINE_THRESHOLD')
                                        .drop(columns=['embeddings', 'scraped_at'])
-                                       .iloc[:100])
+                                       .iloc[:200])
         with st.spinner('Finding matches...'):
             matches = asyncio.run(insight_grant.analyze_matches_anthropic_only(matches=st.session_state['results'], abstract=st.session_state.abstract))
             st.session_state['matches'] = matches.query('good_match.str.contains("yes", case=False)').reset_index(drop=True)
@@ -85,4 +85,8 @@ with buttons_container:
 
 if 'matches' in st.session_state:
     # st.write(len(st.session_state.matches))
+    st.text('Curated Matches')
     st.dataframe(st.session_state.matches, hide_index=True)
+    st.divider()
+    st.text('Similarity Scores')
+    st.dataframe(st.session_state.results, hide_index=True)
